@@ -1,0 +1,51 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+require 'methadone'
+require 'asdl'
+require 'pathname'
+
+class App
+  include Methadone::Main
+  include Methadone::CLILogging
+
+  main do |asdl_file|
+    # Add args you want: |like,so|
+    # your program code here
+    # You can access CLI options via
+    # the options Hash
+    app = ASDL::App.new
+    app.generate(asdl_file)
+  end
+
+  # supplemental methods here
+
+  # Declare command-line interface here
+
+  # description "one line description of your app"
+  #
+  # Accept flags via:
+  # on("--flag VAL","Some flag")
+  # options[flag] will contain VAL
+  #
+  # Specify switches via:
+  # on("--[no-]switch","Some switch")
+  #
+  # Or, just call OptionParser methods on opts
+  #
+  # Require an argument
+  # arg :some_arg
+  #
+  # # Make an argument optional
+  # arg :optional_arg, :optional
+
+  version ASDL::VERSION
+
+  use_log_level_option :toggle_debug_on_signal => 'USR1'
+
+  description "This parses an ASDL file and produces a ruby C extension for the AST"
+
+  arg :asdl_file, "ASDL file to generate ruby C files from"
+
+  go!
+end
