@@ -4,6 +4,7 @@ require 'optparse'
 require 'methadone'
 require 'asdl'
 require 'pathname'
+require 'pry'
 
 class App
   include Methadone::Main
@@ -14,8 +15,8 @@ class App
     # your program code here
     # You can access CLI options via
     # the options Hash
-    app = ASDL::App.new
-    app.generate(asdl_file)
+    app = ASDL::App.new(logger: self.logger)
+    app.generate(asdl_file, src_dir: options["src_dir"], inc_dir: options["inc_dir"])
   end
 
   # supplemental methods here
@@ -44,7 +45,10 @@ class App
   use_log_level_option :toggle_debug_on_signal => 'USR1'
 
   description "This parses an ASDL file and produces a ruby C extension for the AST"
-
+  options['src_dir'] = Pathname.getwd
+  options['inc_dir'] = Pathname.getwd
+  on("-s DIR", "--src_dir", "Where to generate C files")
+  on("-i DIR", "--inc_dir", "Where to generate include files")
   arg :asdl_file, "ASDL file to generate ruby C files from"
 
   go!

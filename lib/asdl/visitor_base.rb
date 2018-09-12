@@ -1,5 +1,6 @@
 require 'set'
 require_relative 'reflow'
+require 'pry' if $DEBUG
 
 
 module ASDL
@@ -50,8 +51,27 @@ module ASDL
           meth.call(obj,*args)
         rescue StandardError => e
           puts "Error visiting #{obj}: #{e.message}"
+          if $DEBUG
+            puts e
+            puts e.backtrace
+          end
         end
       end
+    end
+
+    def get_c_type(name)
+      if ASDL.builtin_type?( name)
+        name
+      else
+        return "#{name}_ty"
+      end
+    end
+
+     # Return true if sum is a simple
+    # A sum is simple if its types have no fields
+    # unaryop = Invert | Not | UADD |USub
+    def simple_sum?(sum)
+      sum.types.all?{|t| t.fields.empty?}
     end
 
   end
@@ -78,31 +98,23 @@ module ASDL
   class EmitVisitor < ASDL::VisitorBase
 
     attr_reader :file, :identifiers
-
-    def get_c_type(name)
-      if ASDL.builtin_type?( name)
-        name
-      else
-        return "#{name}_ty"
-      end
-    end
-
-    # Return true if sum is a simple
-    # A sum is simple if its types have no fields
-    # unaryop = Invert | Not | UADD |USub
-    def simple_sum?(sum)
-      sum.types.all?{|t| t.fields.empty?}
-    end
-
     attr_reader :identifier, :reflow_klass, :tabsize, :file
 
-    def initialize(file, tabsize: 4, max_col: 80 , reflow: Reflow.new(tabsize: tabsize, max_col: max_col))
+    def self.for_file(f, tabsize: 4, max_col: 80)
+      visitor = new(f, tabsize, max_col)
+    end
+
+    def initialize(file, tabsize: 4, max_col: 80 , reflow: nil)
       @file = file
       @identifiers = Set.new
-      @reflow_klass = reflow
       @tabsize = tabsize
+      @max_col = max_col
+      @reflow_klass = reflow || init_reflow(tabsize, max_col)
       super()
+    end
 
+    def init_reflow(tab,col)
+      Reflow.new(tabsize: tab,max_col: col)
     end
 
     def space_before(depth)
@@ -123,12 +135,11 @@ module ASDL
     def emit_identifier(name)
       lname = name.to_s
       return if identifiers.include? lname
-      emit("_Rb_IDENTIFIER#{name}")
-      identifiers << name
+      emit("_Py_IDENTIFIER(#{lname});")
+      identifiers << lname
     end
 
     def emit(s, depth=0, reflow=true)
-
       if reflow
         #   binding.pry if s.size > 80
         lines = reflow_lines(s,depth)
