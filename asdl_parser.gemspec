@@ -31,12 +31,16 @@ files for Abstract Syntax Trees from a ASDL file}
   spec.bindir        = "bin"
   spec.executables   = "asdl"
   spec.require_paths = ["lib"]
+  spec.add_dependency "dry-view", ">= 0.0"
+  spec.add_dependency "dry-system", '>= 0.0'
+  spec.add_dependency "dry-monitor", '>= 0.0'
+  spec.add_dependency "lex", '>= 0.0'
+  
 
-  spec.add_development_dependency "bundler", "~> 1.16"
-  spec.add_development_dependency "rake", "~> 10.0"
-  spec.add_development_dependency "minitest", "~> 5.0"
+  spec.add_development_dependency "rake", ">=  0.0"
+  spec.add_development_dependency "minitest", ">= 0.0"
   spec.add_development_dependency('rdoc')
-  spec.add_dependency('methadone', '~> 2.0.0')
+  spec.add_dependency('methadone', '>= 0.0')
   spec.add_development_dependency('test-unit')
   spec.add_development_dependency('pry')
 end

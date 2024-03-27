@@ -6,6 +6,11 @@ module ASDL
 
   class Generator
 
+    include Import['utils.logger','parser']
+
+
+    attr_reader :mod
+
 
     class <<self
       def set_visitor(name)
@@ -19,18 +24,8 @@ module ASDL
     end
 
 
-    attr_reader :mod, :logger
-
-    def initialize(logger=default_logger)
-      @logger = logger
-    end
-
     def visitor_file
       self.class.visitor_file
-    end
-
-    def default_logger
-      Logger.new(STDOUT)
     end
 
 
@@ -47,24 +42,32 @@ module ASDL
     end
 
 
-    def generate(asdl_file, src_dir: '.', inc_dir: '.')
-      @mod = ASDL::Parser.parse(asdl_file)
-      @logger = logger
+    def generate_include_files(inc_dir)
       inc_dir = inc_dir ? Pathname(inc_dir) : Pathname.getwd
+      inc_dir.mk_path unless inc_dir.directory?
       inc_outfile = (inc_dir + include_name_from_mod(mod)).expand_path
       File.open(inc_outfile, 'w') do |f|
         generate_include_file(mod, f)
       end
       logger.info("Generated #{inc_outfile}")
+    end
 
+    def generate_c_files(src_dir)
       src_dir = src_dir ? Pathname(src_dir) : Pathname.getwd
+      src_dir.mk_path unless inc_dir.directory?
       src_outfile = (src_dir + c_src_name_from_mod(mod)).expand_path
       File.open(src_outfile, 'w') do |f|
         generate_c_file(mod, f)
       end
 
       logger.info("Generated #{src_outfile}")
+    end
 
+
+    def call(asdl_file, src_dir: '.', inc_dir: '.')
+      @mod = parser.parse(asdl_file)
+      generate_include_files
+      generate_c_files
     end
 
 
