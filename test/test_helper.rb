@@ -1,4 +1,6 @@
-$LOAD_PATH.unshift File.expand_path("../../lib", __FILE__)
-require "asdl_parser"
+# frozen_string_literal: true
+
+$LOAD_PATH.unshift File.expand_path("../lib", __dir__)
+require "asdl"
 
 require "minitest/autorun"

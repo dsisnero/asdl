@@ -1,37 +1,28 @@
-require 'set'
-require_relative 'reflow'
-require 'pry' if $DEBUG
+require "set"
+require_relative "reflow"
+require "pry" if $DEBUG
 
-
-module ASDL
-
-  @builtin_types = Set['identifier', 'string', 'bytes', 'int', 'object', 'singleton']
+module Asdl
+  @builtin_types = Set["identifier", "string", "bytes", "int", "object", "singleton"]
 
   class << self
-    def builtin_types
-      @builtin_types
-    end
+    attr_reader :builtin_types
 
     def builtin_type?(t)
       @builtin_types.include? t
     end
 
-
     def chain_of_visitors(*visitors)
       ChainOfVisitors.new(visitors)
     end
-
   end
 
-
   class VisitorBase
-
     def self.chain_of_visitors(*visitors)
       ChainOfVisitors.new(visitors)
     end
 
     attr_reader :cache
-
 
     def initialize
       @cache = {}
@@ -41,15 +32,19 @@ module ASDL
       klass = obj.class
       meth = cache[klass]
       unless meth
-        class_name = klass.name.sub("ASDL::","")
+        class_name = klass.name.sub("Asdl::", "")
         methname = "visit_#{class_name}"
-        meth =  self.method(methname) rescue nil
+        meth = begin
+          method(methname)
+        rescue
+          nil
+        end
         cache[klass] = meth
       end
       if meth
         begin
-          meth.call(obj,*args)
-        rescue StandardError => e
+          meth.call(obj, *args)
+        rescue => e
           puts "Error visiting #{obj}: #{e.message}"
           if $DEBUG
             puts e
@@ -60,24 +55,22 @@ module ASDL
     end
 
     def get_c_type(name)
-      if ASDL.builtin_type?( name)
+      if Asdl.builtin_type?(name)
         name
       else
-        return "#{name}_ty"
+        "#{name}_ty"
       end
     end
 
-     # Return true if sum is a simple
+    # Return true if sum is a simple
     # A sum is simple if its types have no fields
     # unaryop = Invert | Not | UADD |USub
     def simple_sum?(sum)
-      sum.types.all?{|t| t.fields.empty?}
+      sum.types.all? { |t| t.fields.empty? }
     end
-
   end
 
   class ChainOfVisitors
-
     attr_reader :visitors
 
     def initialize(visitors)
@@ -86,17 +79,14 @@ module ASDL
 
     def visit(object)
       visitors.each do |v|
-        v.emit_comment{ "Generated from #{v.class}"}
+        v.emit_comment { "Generated from #{v.class}" }
         v.visit(object)
-        v.emit("",0)
+        v.emit("", 0)
       end
     end
-
   end
 
-
-  class EmitVisitor < ASDL::VisitorBase
-
+  class EmitVisitor < Asdl::VisitorBase
     attr_reader :file, :identifiers
     attr_reader :identifier, :reflow_klass, :tabsize, :file
 
@@ -104,7 +94,7 @@ module ASDL
       visitor = new(f, tabsize, max_col)
     end
 
-    def initialize(file, tabsize: 4, max_col: 80 , reflow: nil)
+    def initialize(file, tabsize: 4, max_col: 80, reflow: nil)
       @file = file
       @identifiers = Set.new
       @tabsize = tabsize
@@ -113,8 +103,8 @@ module ASDL
       super()
     end
 
-    def init_reflow(tab,col)
-      Reflow.new(tabsize: tab,max_col: col)
+    def init_reflow(tab, col)
+      Reflow.new(tabsize: tab, max_col: col)
     end
 
     def space_before(depth)
@@ -128,7 +118,7 @@ module ASDL
       emit("*/\n")
     end
 
-    def reflow_lines(s,depth)
+    def reflow_lines(s, depth)
       reflow_klass.reflow_lines(s, depth)
     end
 
@@ -139,20 +129,17 @@ module ASDL
       identifiers << lname
     end
 
-    def emit(s, depth=0, reflow=true)
-      if reflow
+    def emit(s, depth = 0, reflow = true)
+      lines = if reflow
         #   binding.pry if s.size > 80
-        lines = reflow_lines(s,depth)
+        reflow_lines(s, depth)
       else
-        lines = [s]
+        [s]
       end
       lines.each do |line|
         line = "#{space_before(depth)}#{line}\n"
         file.write line
       end
     end
-
   end
-
-
 end

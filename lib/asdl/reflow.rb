@@ -1,4 +1,4 @@
-require 'pp'
+require "pp"
 
 
 # Reflow the line s indented depth tabs.
@@ -10,7 +10,6 @@ require 'pp'
 #     column as the first character beyond the opening { in the first
 #     line.
 class Reflow
-
   attr_reader :tabsize, :max_col
 
 
@@ -20,36 +19,34 @@ class Reflow
     @max_col = 80
   end
 
-
-  def reflow_lines(s,depth)
+  def reflow_lines(s, depth)
     size = max_col - (depth * tabsize)
     return [s] if s.size < size
 
     lines = []
     cur = s
-    padding = String.new
+    padding = ""
     while cur.size > size
-      i = cur.rindex(' ', size)
+      i = cur.rindex(" ", size)
       lines.append(padding + cur[0..i])
       if lines.size == 1
-        j = cur[0..i].index('{')
+        j = cur[0..i].index("{")
         if j and j >= 0
           j += 2 # account for the brace and space after it
           size -= j
           padding = " " * j
         else
-          j = cur[0..i].index('(')
-          if j and j>= 0
+          j = cur[0..i].index("(")
+          if j and j >= 0
             j += 1 # account for paren (no space after it)
             size -= j
             padding = " " * j
           end
         end
       end
-      cur = cur[i+1..-1]
+      cur = cur[i + 1..-1]
     end
     lines.append(padding + cur)
-    return lines
+    lines
   end
-
 end

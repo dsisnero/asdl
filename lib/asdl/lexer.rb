@@ -1,7 +1,6 @@
-require 'lex'
+require "lex"
 
-module ASDL
-
+module Asdl
   class Lexer < Lex::Lexer
     tokens(
       :EQUALS,
@@ -18,7 +17,6 @@ module ASDL
       :COMMENT
     )
 
-
     # Regular expression rules for simple tokens
     rule(:CONSTRUCTID, /[[:upper:]][[:alnum:]_]*/)
     rule(:TYPEID, /[[:lower:]][[:alnum:]_]*/)
@@ -32,14 +30,8 @@ module ASDL
     rule(:LBRACE, /{/)
     rule(:RBRACE, /}/)
 
-
-    rule(:COMMENT, /^--.*/) do |lexer,token|
-
+    rule(:COMMENT, /^--.*/) do |lexer, token|
     end
-
-
-
-
 
     # Define a rule so we can track line numbers
     rule(:newline, /\n+/) do |lexer, token|
@@ -49,27 +41,23 @@ module ASDL
     # A string containing ignored characters (spaces and tabs)
     ignore " \t"
 
-
     error do |lexer, token|
       puts "Illegal character: #{value}"
     end
   end
-
 end
 
 if $0 == __FILE__
-  require 'pry'
+  require "pry"
   lexer = Lexer.new
   output = lexer.lex ARGF.read
   t = nil
-  #binding.pry
+  # binding.pry
   loop do
-
     t = output.next
     binding.pry if t.line == 69
     puts t
     # binding.pry
-
   end
 
 end

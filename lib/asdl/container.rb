@@ -1,16 +1,18 @@
-require 'dry/system/container'
-require 'dry/system/components'
+require "dry/system/container"
+require "dry/system/components"
 
-module ASDL
+module Asdl
   class Container < Dry::System::Container
     use :logging
-    use :env, inferrer: -> {ENV.fetch('ASDL_ENV', :ruby).to_sym}
+    use :env, inferrer: -> { ENV.fetch("ASDL_ENV", :ruby).to_sym }
     configure do |config|
-      config.root = File.expand_path('..',__dir__)
-      config.default_namespace = 'asdl'
-      config.auto_register = 'lib'
-      
+      config.root = Pathname(__dir__).join("../..")
+      config.name = :asdl
+      config.component_dirs.add "lib" do |dir|
+        dir.namespaces.add "asdl", key: nil
+      end
     end
-    load_paths!('lib\asdl', 'system')
+
+    add_to_load_path! "lib"
   end
 end

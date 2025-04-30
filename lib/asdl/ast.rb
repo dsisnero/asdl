@@ -1,67 +1,56 @@
-module ASDL
-
+module Asdl
   class AST
-
-    attr_reader :value,:name
+    attr_reader :value, :name
 
     def inspect
       raise NotImplementedError
     end
-
   end
 
   class Module < AST
-
     attr_reader :name, :defns, :types
 
-    def initialize(name,defns)
+    def initialize(name, defns)
       @name = name
       @defns = defns
-      @types = defns.each_with_object({}) do |type,hsh|
+      @types = defns.each_with_object({}) do |type, hsh|
         #    binding.pry
         hsh[type.name] = type.value
       end
     end
 
     def inspect
-      "Module(#@name, #@defns)"
+      "Module(#{@name}, #{@defns})"
     end
-
   end
 
   class Type < AST
-
     attr_reader :name, :value
 
     def initialize(name, value)
       @name = name
       @value = value
-
     end
 
     def inspect
-      "Type(#@name, #@value)"
+      "Type(#{@name}, #{@value})"
     end
-
   end
 
   class Constructor < AST
-
     attr_reader :name, :fields
 
-    def initialize(name, fields=nil)
+    def initialize(name, fields = nil)
       @name = name
       @fields = fields || []
     end
 
     def inspect
-      "Constructor(#@name, #@fields)"
+      "Constructor(#{@name}, #{@fields})"
     end
-
   end
 
   class Field < AST
-
     attr_reader :type, :name, :seq, :opt
 
     def initialize(type, name = nil, seq: false, opt: false)
@@ -80,24 +69,22 @@ module ASDL
     end
 
     def inspect
-      if seq
-        extra = ", seq=True"
+      extra = if seq
+        ", seq=True"
       elsif opt
-        extra = ", opt = True"
+        ", opt = True"
       else
-        extra = ""
+        ""
       end
       if name
-        return "Field(#{type}, #{name}#{extra})"
+        "Field(#{type}, #{name}#{extra})"
       else
-        return "Field(#{type}#{extra})"
+        "Field(#{type}#{extra})"
       end
     end
-
   end
 
   class Sum < AST
-
     attr_reader :types, :attributes
 
     def initialize(types, attributes = nil)
@@ -107,17 +94,15 @@ module ASDL
 
     def inspect
       if @attributes.empty?
-        return "Sum(#@types)"
+        "Sum(#{@types})"
       else
-        return "Sum(#{@types}, #@attributes)"
+        "Sum(#{@types}, #{@attributes})"
       end
     end
   end
 
-
   class Product < AST
-
-    attr_reader :fields,:attributes
+    attr_reader :fields, :attributes
 
     def initialize(fields, attributes = nil)
       @fields = fields
@@ -126,12 +111,10 @@ module ASDL
 
     def inspect
       if @attributes.empty?
-        return "Product(#{@fields})"
+        "Product(#{@fields})"
       else
-        return "Product(#{@fields}, #@attributes)"
+        "Product(#{@fields}, #{@attributes})"
       end
     end
-
   end
-
 end

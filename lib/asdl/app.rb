@@ -1,15 +1,11 @@
-require 'pathname'
-require_relative 'generator'
-require 'logger'
-require 'asdl/python_generator'
+require "pathname"
+require_relative "generator"
+require "logger"
+require "asdl/python_generator"
 
-
-module ASDL
-
+module Asdl
   class App
-
     attr_reader :logger, :generator_klass
-
 
     def initialize(generator: PythonGenerator, logger: default_logger)
       @logger = logger
@@ -24,18 +20,16 @@ module ASDL
     def default_logger
       Logger.new(STDOUT)
     end
-
   end
-
 end
 
-  if $0 == __FILE__
+if $0 == __FILE__
 
-    app = ASDL::App.new
-    require 'pry'
-    src = ARGV[0]
-    raise 'Need a ASDL src' unless src
-    #binding.pry
-    app.generate(src)
+  app = Asdl::App.new
+  require "pry"
+  src = ARGV[0]
+  raise "Need a Asdl src" unless src
+  # binding.pry
+  app.generate(src)
 
-  end
+end
